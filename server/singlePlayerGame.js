@@ -31,19 +31,7 @@ class SinglePlayerGame {
 
   playCard(cardIndex) {
     const result = this.engine.playCard('human', cardIndex);
-    if (result.error || result.handLost) {
-      return result;
-    }
-
-    const drawResult = this.engine.drawCard('human');
-    if (drawResult.error || drawResult.gameDraw) {
-      return drawResult;
-    }
-
-    return { 
-      success: true, 
-      canDiscardFourOno99: drawResult.canDiscardFourOno99 
-    };
+    return result;
   }
 
   drawCard() {
@@ -102,9 +90,9 @@ class SinglePlayerGame {
 
       if (decision.action === 'playCard') {
         const cardPlayed = botState.yourHand[decision.cardIndex];
-        
+
         const result = this.engine.playCard(currentPlayer.id, decision.cardIndex);
-        
+
         this.notifyUpdate('botAction', {
           botName: currentPlayer.name,
           action: 'played a card',
@@ -112,27 +100,17 @@ class SinglePlayerGame {
           gameState: this.engine.getStateForPlayer('human')
         });
 
+        if (result.gameDraw) {
+          this.processingBotTurn = false;
+          return { gameDraw: true, message: result.message };
+        }
+
         if (result.handLost) {
           this.processingBotTurn = false;
           return { handLost: true, ...result };
         }
 
-        await this.delay(800);
-        
-        const drawResult = this.engine.drawCard(currentPlayer.id);
-        
-        if (drawResult.gameDraw) {
-          this.processingBotTurn = false;
-          return { gameDraw: true, message: drawResult.message };
-        }
-        
-        this.notifyUpdate('botAction', {
-          botName: currentPlayer.name,
-          action: 'drew a card',
-          gameState: this.engine.getStateForPlayer('human')
-        });
-
-        if (drawResult.canDiscardFourOno99) {
+        if (result.canDiscardFourOno99) {
           this.engine.discardFourOno99(currentPlayer.id);
           this.notifyUpdate('botAction', {
             botName: currentPlayer.name,

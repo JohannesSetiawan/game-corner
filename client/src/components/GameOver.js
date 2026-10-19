@@ -13,6 +13,7 @@ const GameOver = ({ winner, onBackToMenu }) => {
           <>
             <h1>🎉 Game Over! 🎉</h1>
             <h2>{winner.name} Wins!</h2>
+            {winner.score != null && <h3>Final Score: {winner.score} pts</h3>}
           </>
         )}
         <button onClick={onBackToMenu}>Back to Menu</button>
